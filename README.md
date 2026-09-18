@@ -68,7 +68,7 @@ Start here, in order:
 
 ## Contributing
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md). `main` is protected. Changes land through reviewed pull requests. Docs changes follow the same rules as code.
+Read [CONTRIBUTING.md](CONTRIBUTING.md). `main` is protected. Direct pushes are blocked. Organization admins may squash-merge a PR without a review; Maintain collaborators cannot. Docs changes follow the same rules as code.
 
 ## Security
 

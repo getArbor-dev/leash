@@ -16,12 +16,16 @@ Leash is maintained by getArbor.
   Merge after one code-owner review if the other maintainer is silent
   for 48 hours on a working day.
 - Security-sensitive hook/radius/ruleset changes: both maintainers,
-  plus the process in [SECURITY.md](SECURITY.md).
+  plus the process in [SECURITY.md](SECURITY.md). GitHub does not
+  enforce the second reviewer for organization admins
+  ([ADR 0008](docs/adr/0008-org-admin-pr-bypass.md)). Maintain
+  collaborators still cannot merge without a review.
 
 ## `main`
 
 `main` is the only long-lived branch. It is protected by a repository
-ruleset:
+ruleset (id `23650014`, snapshot
+[`.github/ruleset-main.json`](.github/ruleset-main.json)):
 
 - pull request required
 - 1 code-owner approval
@@ -31,11 +35,18 @@ ruleset:
 - linear history
 - no force push
 - no branch deletion
-- rules apply to administrators
+- squash-merge only
+- direct push, force-push, and deleting `main` apply to
+  administrators
 
-There is no maintainer bypass actor. If GitHub is on fire, we
-temporarily disable the ruleset in the UI, record why in the next PR,
-and turn it back on.
+GitHub has no per-user ruleset bypass. Organization admins
+(`@Anandb71` today) may squash-merge a pull request with no
+approvals (`bypass_mode: pull_request`). Maintain collaborators
+(`@Akshay0047`) cannot. See [ADR 0008](docs/adr/0008-org-admin-pr-bypass.md).
+
+If GitHub is on fire and an org admin still cannot merge, we
+temporarily disable the ruleset in the UI, record why in the next
+PR, and turn it back on.
 
 ## Releases
 
