@@ -17,3 +17,7 @@ path = "src/lib.rs"
 
 [dev-dependencies]
 tempfile = "3"
+
+[[bin]]
+name = "leash"
+path = "src/main.rs"
