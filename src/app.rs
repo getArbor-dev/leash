@@ -228,32 +228,7 @@ fn cmd_expand(path: &str, reason: &str, stdout: &mut dyn Write, stderr: &mut dyn
     0
 }
 
-const CLAUDE_SETTINGS: &str = r#"{
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "leash session --from-hook"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit|Bash|PowerShell",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "leash hook"
-          }
-        ]
-      }
-    ]
-  }
-}
-"#;
+const CLAUDE_SETTINGS: &str = include_str!("../contrib/claude.settings.json");
 
 fn cmd_install(stdout: &mut dyn Write, stderr: &mut dyn Write) -> i32 {
     let repo = match cwd_repo() {
