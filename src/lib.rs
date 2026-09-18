@@ -5,4 +5,5 @@
 pub mod decision;
 pub mod diff;
 pub mod paths;
+pub mod rules;
 pub mod session;
