@@ -2,6 +2,7 @@
 //!
 //! Markdown does not enforce. This crate does.
 
+pub mod cli;
 pub mod config;
 pub mod decision;
 pub mod diff;
