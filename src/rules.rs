@@ -3,10 +3,14 @@
 use crate::decision::{Decision, RuleClass};
 
 pub fn scan_added(path: &str, added: &str) -> Option<Decision> {
-    if let Some(d) = sec_001(path, added) {
-        return Some(d);
-    }
-    sec_002(path, added)
+    scan_hunk(path, added, &[])
+}
+
+pub fn scan_hunk(path: &str, added: &str, apply_paths: &[&str]) -> Option<Decision> {
+    let _ = apply_paths;
+    sec_001(path, added)
+        .or_else(|| sec_002(path, added))
+        .or_else(|| sec_003(path, added))
 }
 
 fn added_lines(added: &str) -> impl Iterator<Item = (usize, &str)> {
@@ -44,6 +48,37 @@ fn dynamic_eval(line: &str) -> bool {
         }
     }
     false
+}
+
+fn sec_003(path: &str, added: &str) -> Option<Decision> {
+    for (line_no, line) in added_lines(added) {
+        if sql_concat(line) {
+            return Some(Decision::deny(
+                RuleClass::Rule,
+                Some("LEASH-SEC-003"),
+                Some(path),
+                &format!("SQL string concat in added lines (line {line_no})"),
+            ));
+        }
+    }
+    None
+}
+
+fn sql_concat(line: &str) -> bool {
+    let u = line.to_ascii_uppercase();
+    let sql = u.contains("SELECT ")
+        || u.contains("INSERT ")
+        || u.contains("UPDATE ")
+        || u.contains("DELETE ");
+    if !sql {
+        return false;
+    }
+    line.contains(" + ")
+        || line.contains("${")
+        || line.contains("%s")
+        || line.contains(".format(")
+        || (line.contains("f\"") && line.contains('{'))
+        || (line.contains("f'") && line.contains('{'))
 }
 
 fn sec_001(path: &str, added: &str) -> Option<Decision> {
@@ -140,5 +175,16 @@ mod tests {
     #[test]
     fn eval_on_literal_is_clean() {
         assert!(scan_added("app.js", "eval(\"2+2\");\n").is_none());
+    }
+
+    #[test]
+    fn sql_concat_denies() {
+        let d = scan_added("db.py", "q = \"SELECT * FROM users WHERE id = \" + user_id\n").unwrap();
+        assert_eq!(d.rule_id.as_deref(), Some("LEASH-SEC-003"));
+    }
+
+    #[test]
+    fn parameterized_sql_is_clean() {
+        assert!(scan_added("db.py", "q = \"SELECT * FROM users WHERE id = ?\"\n").is_none());
     }
 }
