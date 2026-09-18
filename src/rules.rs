@@ -7,11 +7,11 @@ pub fn scan_added(path: &str, added: &str) -> Option<Decision> {
 }
 
 pub fn scan_hunk(path: &str, added: &str, apply_paths: &[&str]) -> Option<Decision> {
-    let _ = apply_paths;
     sec_001(path, added)
         .or_else(|| sec_002(path, added))
         .or_else(|| sec_003(path, added))
         .or_else(|| sec_004(path, added))
+        .or_else(|| sec_005(path, added, apply_paths))
 }
 
 fn added_lines(added: &str) -> impl Iterator<Item = (usize, &str)> {
@@ -108,6 +108,65 @@ fn xss_sink(line: &str) -> bool {
     line.contains("${")
         || line.contains(" + ")
         || line.contains("{") && line.contains("}")
+}
+
+fn sec_005(path: &str, added: &str, apply_paths: &[&str]) -> Option<Decision> {
+    let Some(lock) = lockfile_for(path) else {
+        return None;
+    };
+    if !manifest_adds_dep(path, added) {
+        return None;
+    }
+    let has_lock = apply_paths.iter().any(|p| {
+        p.replace('\\', "/")
+            .rsplit('/')
+            .next()
+            .is_some_and(|name| name.eq_ignore_ascii_case(lock))
+    });
+    if has_lock {
+        return None;
+    }
+    Some(Decision::deny(
+        RuleClass::Rule,
+        Some("LEASH-SEC-005"),
+        Some(path),
+        "manifest add without lockfile change in the same apply",
+    ))
+}
+
+fn lockfile_for(path: &str) -> Option<&'static str> {
+    let name = path.replace('\\', "/");
+    let name = name.rsplit('/').next().unwrap_or(&name);
+    match name {
+        "package.json" => Some("package-lock.json"),
+        "Cargo.toml" => Some("Cargo.lock"),
+        "pyproject.toml" | "requirements.txt" => Some("uv.lock"),
+        "go.mod" => Some("go.sum"),
+        "Gemfile" => Some("Gemfile.lock"),
+        "composer.json" => Some("composer.lock"),
+        _ => None,
+    }
+}
+
+fn manifest_adds_dep(path: &str, added: &str) -> bool {
+    let name = path.replace('\\', "/");
+    let name = name.rsplit('/').next().unwrap_or(&name);
+    match name {
+        "package.json" => added.contains("\"dependencies\"")
+            || added.contains("\"devDependencies\"")
+            || added.lines().any(|l| l.contains("\": \"") && l.contains('^') || l.contains("\": \"") && l.contains('~')),
+        "Cargo.toml" => {
+            added.contains("[dependencies]")
+                || added.contains("[dev-dependencies]")
+                || added.contains("version")
+        }
+        "requirements.txt" => added.lines().any(|l| !l.trim().is_empty() && !l.trim().starts_with('#')),
+        "go.mod" => added.contains("require "),
+        "Gemfile" => added.contains("gem "),
+        "composer.json" => added.contains("\"require\""),
+        "pyproject.toml" => added.contains("dependencies") || added.contains("[project]"),
+        _ => false,
+    }
 }
 
 fn sec_001(path: &str, added: &str) -> Option<Decision> {
@@ -226,5 +285,26 @@ mod tests {
     #[test]
     fn innerhtml_literal_is_clean() {
         assert!(scan_added("ui.js", "el.innerHTML = \"<div class='ok'></div>\";\n").is_none());
+    }
+
+    #[test]
+    fn cargo_toml_without_lockfile_denies() {
+        let d = scan_hunk(
+            "Cargo.toml",
+            "[dependencies]\nserde = \"1\"\n",
+            &[],
+        )
+        .unwrap();
+        assert_eq!(d.rule_id.as_deref(), Some("LEASH-SEC-005"));
+    }
+
+    #[test]
+    fn cargo_toml_with_lockfile_is_clean() {
+        assert!(scan_hunk(
+            "Cargo.toml",
+            "[dependencies]\nserde = \"1\"\n",
+            &["Cargo.lock"],
+        )
+        .is_none());
     }
 }
