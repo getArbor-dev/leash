@@ -9,6 +9,7 @@ pub mod config;
 pub mod decision;
 pub mod diff;
 pub mod engine;
+pub mod expand;
 pub mod hook;
 pub mod pack;
 pub mod paths;
