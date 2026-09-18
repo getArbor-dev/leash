@@ -229,7 +229,7 @@ fn merge_neighbors(out: &mut Vec<Neighbor>, hits: Vec<(String, String)>) {
     }
 }
 
-fn run_json(probe: &Probe, repo: &Path, args: &[&str], timeout: Duration) -> Result<String, ArborError> {
+pub(crate) fn run_json(probe: &Probe, repo: &Path, args: &[&str], timeout: Duration) -> Result<String, ArborError> {
     use std::io::Read;
     let mut cmd = probe.command()?;
     cmd.args(args)
