@@ -6,6 +6,12 @@ Releases will follow [SemVer](https://semver.org/) once v0 exists.
 
 ## [Unreleased]
 
+### Changed
+
+- Organization admins may squash-merge pull requests without
+  reviews. Direct push to `main` stays denied. Maintain
+  collaborators still need a review (ADR 0008).
+
 ### Added
 
 - Docs-first repository: product contract, skill spec, hook spec,

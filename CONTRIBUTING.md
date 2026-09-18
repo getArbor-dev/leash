@@ -13,6 +13,9 @@ the code, or first.
    pushes are blocked, including for admins.
 4. One approving review from a code owner who is not the last
    pusher. Stale reviews dismiss. Conversations must resolve.
+   getArbor-dev organization admins may squash-merge without that
+   review ([ADR 0008](docs/adr/0008-org-admin-pr-bypass.md)).
+   Maintain collaborators cannot.
 5. Do not add a skill, agent, or MCP that is unrelated to the
    working set or the deny hook.
 
