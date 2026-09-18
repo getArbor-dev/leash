@@ -1,13 +1,13 @@
 # Architecture
 
-## v0 (specified, not built)
+## v0
 
 ```text
 [harness]
    │  skill: SKILL.md
-   │  hook:  leash-hook
+   │  hook:  leash hook
    ▼
-[leash-hook]
+[leash hook]
    │  reads .leash/session.json
    │  canonicalize(path)
    │  radius check
@@ -17,16 +17,16 @@ allow | deny
 ```
 
 ```text
-[leash-engine]
-   │  git diff
-   │  optional: arbor map --from-diff --budget-tokens N
+[leash session]
+   │  git diff --name-only HEAD
+   │  optional --path seeds
    ▼
 .leash/session.json
 ```
 
-No long-running process. Engine runs at session start and on
-expand. Hook is a short-lived binary or script the harness already
-knows how to spawn.
+No long-running process. The crate is Rust ([ADR 0006](adr/0006-rust-hook.md)).
+Engine runs at session start and on expand. Hook is a short-lived
+binary the harness already knows how to spawn.
 
 ## v1
 
@@ -40,16 +40,10 @@ Same rule ids. Different door.
 
 ## Language
 
-Not decided in this ADR set on purpose. Constraints:
+Rust. See [ADR 0006](adr/0006-rust-hook.md).
 
-- Hook must start fast (see [hooks.md](hooks.md) budgets)
-- Ship as a single static binary **or** a script with zero
-  user-installed language runtime beyond what the harness has
-- Arbor integration is a subprocess in v1, not a rewrite of arbor-core
-  into this repo
-
-Candidate later: Rust (matches Arbor, hook latency) or Go. Not a
-Python daemon.
+Arbor integration remains a subprocess in v1, not a rewrite of
+arbor-core into this repo.
 
 ## Data
 
