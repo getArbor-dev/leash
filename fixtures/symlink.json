@@ -1,0 +1,4 @@
+{
+  "name": "symlink-escape",
+  "note": "Exercised by tests/symlink.rs on unix. A link whose target is outside the repo is PATH_UNCANONICAL."
+}
