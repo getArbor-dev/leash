@@ -1,0 +1,8 @@
+{
+  "name": "radius-out-of-set",
+  "tool_name": "Write",
+  "set_paths": ["src/lib.rs"],
+  "file_rel": "src/other.rs",
+  "content": "fn x() {}",
+  "expect_class": "RADIUS"
+}

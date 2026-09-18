@@ -6,9 +6,13 @@ A 30-second skill that builds a hard working set from the call graph, refuses wr
 
 ```bash
 npx skills add getArbor-dev/leash
+cargo install --git https://github.com/getArbor-dev/leash --locked
+leash install
 ```
 
-That is the product. There is no daemon to install in v0. The skill plus a PreToolUse hook is the runtime.
+That is the product. The skill is the contract. The binary is the
+deny. There is no daemon to install in v0. If the binary is not on
+`PATH`, every skill response starts with `leash: NOT ENFORCING`.
 
 ## What it does
 
@@ -33,12 +37,12 @@ Leash refuses the patch. That is the gap.
 
 ## Status
 
-**Docs-first.** Spec, threat model, skill contract, and ADRs land before runtime code. The skill file in this repo is the contract. Implementation follows the contract, not the other way around.
+**v0 runtime is in this repository.** The skill plus `leash hook` is
+the product. There is still no daemon.
 
 | Phase | Ships | Not yet |
 | --- | --- | --- |
-| Now | Spec, skill contract, hook contract, threat model | Runtime |
-| v0 | Skill + PreToolUse deny hook + fixture tests | Hosted anything |
+| Now | Skill, PreToolUse deny hook, fixture tests | Hosted anything |
 | v1 | Arbor graph as the radius engine | “We stop CVEs” marketing |
 | v2 | GitHub Action using the same binary | A new coding agent |
 | v3 | Optional fleet mode (worktrees + per-worker leash) | OpenClaw clone |

@@ -5,7 +5,21 @@ an ADR.
 
 ```bash
 npx skills add getArbor-dev/leash
+cargo install --git https://github.com/getArbor-dev/leash --locked
+leash install
 ```
+
+`npx skills add` is the frozen 30-second path for the skill.
+The binary is a second step until we ship a release artifact.
+From a clone: `cargo install --path . --locked`.
+
+If `leash` is not on `PATH`, the skill still loads and must print
+`leash: NOT ENFORCING`. Dropping the deny to claim “works
+everywhere” is a spec violation.
+
+`leash install` writes `.claude/settings.json` only when that file
+does not already exist. Merge by hand otherwise; the template lives
+in `contrib/claude.settings.json`.
 
 Expected result in ≤30 seconds on a machine that already has a
 compatible agent:

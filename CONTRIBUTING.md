@@ -1,8 +1,8 @@
 # Contributing
 
-Leash is docs-first until v0. If the spec is wrong, the code will be
-wrong on purpose. Change the spec in the same PR as the code, or
-first.
+Leash is spec-and-code in the same PR. If the spec is wrong, the
+code will be wrong on purpose. Change the spec in the same PR as
+the code, or first.
 
 ## Rules that will not be debated in a drive-by PR
 
@@ -18,12 +18,12 @@ first.
 
 ## Setup
 
-There is no runtime yet. You need git, a GitHub account with access,
-and the ability to read Markdown.
+Rust stable and git.
 
 ```bash
 git clone https://github.com/getArbor-dev/leash.git
 cd leash
+cargo test --locked
 ```
 
 ## Branch, PR, merge

@@ -1,0 +1,8 @@
+{
+  "name": "manifest-without-lockfile",
+  "tool_name": "Write",
+  "set_paths": ["Cargo.toml"],
+  "file_rel": "Cargo.toml",
+  "content": "[dependencies]\nserde = \"1\"\n",
+  "expect_rule": "LEASH-SEC-005"
+}
