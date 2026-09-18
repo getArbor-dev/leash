@@ -1,0 +1,10 @@
+{
+  "file": "src/auth.rs",
+  "symbols": [
+    {
+      "name": "login",
+      "file": "src/auth.rs",
+      "kind": "function"
+    }
+  ]
+}

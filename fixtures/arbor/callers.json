@@ -1,0 +1,13 @@
+{
+  "symbol": "login",
+  "callers": [
+    {
+      "name": "handle_login",
+      "file": "src/http.rs"
+    },
+    {
+      "name": "login_ok",
+      "file": "tests/auth_test.rs"
+    }
+  ]
+}

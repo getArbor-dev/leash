@@ -3,6 +3,7 @@
 //! Markdown does not enforce. This crate does.
 
 pub mod app;
+pub mod arbor;
 pub mod cli;
 pub mod config;
 pub mod decision;
