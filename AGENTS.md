@@ -1,7 +1,7 @@
 # AGENTS.md
 
-This repository is the Leash contract. You are not the product.
-You are a contributor under the same leash the product describes.
+This repository is Leash. You are a contributor under the same
+leash the product describes.
 
 ## Before you edit
 
@@ -12,13 +12,13 @@ You are a contributor under the same leash the product describes.
 
 ## Working set for this repo
 
-Until Leash v0 exists, treat these as the only default paths:
+Until a session is running, treat these as the default paths:
 
 - `README.md`, `SKILL.md`, `docs/**`, `.github/**`
+- `src/**`, `tests/**`, `fixtures/**`, `contrib/**`, `Cargo.toml`
 - Spec ADRs under `docs/adr/`
 
-Do not add `src/`, package managers, or MCP servers “while you’re
-here.”
+Do not add an MCP server or a second product “while you’re here.”
 
 ## Denies
 
