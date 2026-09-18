@@ -3,5 +3,6 @@
 //! Markdown does not enforce. This crate does.
 
 pub mod decision;
+pub mod diff;
 pub mod paths;
 pub mod session;
