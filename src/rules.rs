@@ -137,12 +137,12 @@ fn sec_005(path: &str, added: &str, apply_paths: &[&str]) -> Option<Decision> {
 fn lockfile_for(path: &str) -> Option<&'static str> {
     let name = path.replace('\\', "/");
     let name = name.rsplit('/').next().unwrap_or(&name);
-    match name {
+    match name.to_ascii_lowercase().as_str() {
         "package.json" => Some("package-lock.json"),
-        "Cargo.toml" => Some("Cargo.lock"),
+        "cargo.toml" => Some("Cargo.lock"),
         "pyproject.toml" | "requirements.txt" => Some("uv.lock"),
         "go.mod" => Some("go.sum"),
-        "Gemfile" => Some("Gemfile.lock"),
+        "gemfile" => Some("Gemfile.lock"),
         "composer.json" => Some("composer.lock"),
         _ => None,
     }
@@ -151,18 +151,24 @@ fn lockfile_for(path: &str) -> Option<&'static str> {
 fn manifest_adds_dep(path: &str, added: &str) -> bool {
     let name = path.replace('\\', "/");
     let name = name.rsplit('/').next().unwrap_or(&name);
-    match name {
-        "package.json" => added.contains("\"dependencies\"")
-            || added.contains("\"devDependencies\"")
-            || added.lines().any(|l| l.contains("\": \"") && l.contains('^') || l.contains("\": \"") && l.contains('~')),
-        "Cargo.toml" => {
+    match name.to_ascii_lowercase().as_str() {
+        "package.json" => {
+            added.contains("\"dependencies\"")
+                || added.contains("\"devDependencies\"")
+                || added.lines().any(|l| {
+                    (l.contains("\": \"") && l.contains('^')) || (l.contains("\": \"") && l.contains('~'))
+                })
+        }
+        "cargo.toml" => {
             added.contains("[dependencies]")
                 || added.contains("[dev-dependencies]")
                 || added.contains("version")
         }
-        "requirements.txt" => added.lines().any(|l| !l.trim().is_empty() && !l.trim().starts_with('#')),
+        "requirements.txt" => added
+            .lines()
+            .any(|l| !l.trim().is_empty() && !l.trim().starts_with('#')),
         "go.mod" => added.contains("require "),
-        "Gemfile" => added.contains("gem "),
+        "gemfile" => added.contains("gem "),
         "composer.json" => added.contains("\"require\""),
         "pyproject.toml" => added.contains("dependencies") || added.contains("[project]"),
         _ => false,
