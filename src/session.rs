@@ -65,6 +65,12 @@ impl WorkingSet {
         })
     }
 
+    pub fn contains_symbol(&self, symbol: &str) -> bool {
+        self.paths
+            .iter()
+            .any(|p| p.symbols.iter().any(|s| s.eq_ignore_ascii_case(symbol)))
+    }
+
     pub fn approx_tokens(bytes: usize) -> u32 {
         (bytes as u32).div_ceil(4)
     }

@@ -1,0 +1,9 @@
+{
+  "symbol": "login",
+  "callees": [
+    {
+      "name": "hash_password",
+      "file": "src/crypto.rs"
+    }
+  ]
+}

@@ -5,13 +5,13 @@ use std::path::{Path, PathBuf};
 
 use serde_json::{json, Value};
 
+use crate::arbor::Probe;
 use crate::cli::{help_text, Cmd};
 use crate::config;
-use crate::diff::build_from_diff;
+use crate::engine;
 use crate::hook::{decide, to_claude_json, HookInput};
-use crate::paths::canonicalize_in_repo;
 use crate::repo::find_repo;
-use crate::session::{SetPath, WorkingSet};
+use crate::session::WorkingSet;
 use crate::store;
 
 pub fn run(args: &[String], stdin: &mut dyn Read, stdout: &mut dyn Write, stderr: &mut dyn Write) -> i32 {
@@ -32,7 +32,7 @@ pub fn run(args: &[String], stdin: &mut dyn Read, stdout: &mut dyn Write, stderr
         Cmd::SessionFromHook => cmd_session_from_hook(stdin, stdout, stderr),
         Cmd::Hook => cmd_hook(stdin, stdout, stderr),
         Cmd::Status => cmd_status(stdout, stderr),
-        Cmd::Expand { path, reason } => cmd_expand(&path, &reason, stdout, stderr),
+        Cmd::Expand { path, symbol, reason } => cmd_expand(path, symbol, &reason, stdout, stderr),
         Cmd::Install => cmd_install(stdout, stderr),
     }
 }
@@ -56,7 +56,7 @@ fn cmd_session(
             return 2;
         }
     };
-    match start_session(&repo, task, paths) {
+    match start_session(&repo, task, paths, &Probe::from_env()) {
         Ok(set) => {
             let _ = writeln!(stdout, "{}", format_enforcing(&set));
             0
@@ -68,9 +68,9 @@ fn cmd_session(
     }
 }
 
-fn start_session(repo: &Path, task: &str, extra: &[String]) -> Result<WorkingSet, String> {
+fn start_session(repo: &Path, task: &str, extra: &[String], probe: &Probe) -> Result<WorkingSet, String> {
     let cfg = config::load(repo);
-    let set = build_from_diff(repo, task, cfg.budget_tokens, extra).map_err(|e| e.to_string())?;
+    let set = engine::build(repo, task, extra, &cfg, probe).map_err(|e| e.to_string())?;
     store::save(repo, &set).map_err(|e| e.to_string())?;
     Ok(set)
 }
@@ -97,7 +97,7 @@ fn cmd_session_from_hook(stdin: &mut dyn Read, stdout: &mut dyn Write, stderr: &
         );
         return 0;
     };
-    match start_session(&repo, "session", &[]) {
+    match start_session(&repo, "session", &[], &Probe::from_env()) {
         Ok(set) => {
             let ctx = format_enforcing(&set);
             let _ = writeln!(
@@ -190,7 +190,13 @@ fn cmd_status(stdout: &mut dyn Write, stderr: &mut dyn Write) -> i32 {
     }
 }
 
-fn cmd_expand(path: &str, reason: &str, stdout: &mut dyn Write, stderr: &mut dyn Write) -> i32 {
+fn cmd_expand(
+    path: Option<String>,
+    symbol: Option<String>,
+    reason: &str,
+    stdout: &mut dyn Write,
+    stderr: &mut dyn Write,
+) -> i32 {
     let repo = match cwd_repo() {
         Ok(r) => r,
         Err(e) => {
@@ -202,30 +208,39 @@ fn cmd_expand(path: &str, reason: &str, stdout: &mut dyn Write, stderr: &mut dyn
         let _ = writeln!(stderr, "leash: no session; run leash session --task \"...\"");
         return 2;
     };
-    let posix = match canonicalize_in_repo(&repo, path) {
-        Ok(p) => p.as_posix().to_string(),
+    let cfg = config::load(&repo);
+    let spec = crate::expand::ExpandSpec {
+        path,
+        symbol,
+        reason: reason.to_string(),
+    };
+    match crate::expand::apply(
+        &repo,
+        &mut set,
+        &spec,
+        &crate::expand::Neighbors::Arbor(Probe::from_env()),
+        &cfg.include,
+        &cfg.exclude,
+    ) {
+        Ok(added) => {
+            if store::save(&repo, &set).is_err() {
+                let _ = writeln!(stderr, "leash: could not write session");
+                return 2;
+            }
+            if added.is_empty() {
+                let _ = writeln!(stdout, "expand: already in set");
+            } else {
+                for p in added {
+                    let _ = writeln!(stdout, "expanded {p}");
+                }
+            }
+            0
+        }
         Err(e) => {
             let _ = writeln!(stderr, "leash: {e}");
-            return 2;
+            2
         }
-    };
-    if !set.contains_posix(&posix, crate::paths::volume_is_case_insensitive()) {
-        let abs = repo.join(posix.replace('/', std::path::MAIN_SEPARATOR_STR));
-        let bytes = std::fs::read(&abs).ok().map(|b| b.len()).unwrap_or(0);
-        set.used_tokens = set.used_tokens.saturating_add(WorkingSet::approx_tokens(bytes));
-        set.paths.push(SetPath {
-            path: posix.clone(),
-            reason: "expanded".into(),
-            symbols: vec![],
-        });
     }
-    set.audit.push(format!("expand {posix} ({reason})"));
-    if store::save(&repo, &set).is_err() {
-        let _ = writeln!(stderr, "leash: could not write session");
-        return 2;
-    }
-    let _ = writeln!(stdout, "expanded {posix}");
-    0
 }
 
 const CLAUDE_SETTINGS: &str = include_str!("../contrib/claude.settings.json");
@@ -305,7 +320,7 @@ mod tests {
     fn start_session_writes_json() {
         let tmp = git_repo();
         fs::write(tmp.path().join("keep.txt"), "changed").unwrap();
-        let set = start_session(tmp.path(), "edit", &[]).unwrap();
+        let set = start_session(tmp.path(), "edit", &[], &Probe::Off).unwrap();
         assert_eq!(set.engine, "diff");
         assert!(store::load(tmp.path()).is_some());
         assert_eq!(set.paths[0].path, "keep.txt");

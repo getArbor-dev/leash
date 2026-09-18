@@ -2,20 +2,12 @@
 
 Dates are not promises. Order is.
 
-## Now — v0 enforce
+## Now — v1 graph radius
 
-- Rust `leash` binary: session, hook, status, expand, install
-- PreToolUse hook that can deny Edit / Write / mutating Bash
-- Diff-only working set labeled `engine: diff`
-- Fixture pack: out-of-radius write, secret in hunk, symlink path,
-  manifest without lockfile
-- Fail-visible when the hook is not installed
-
-## v1 — graph radius
-
-- Arbor (or a vendored equivalent) as the working-set engine
-- Token budget packing with reasons on every path
-- Expand-set API with an audit line (who/why/tokens)
+- Arbor subprocess when `arbor` is on PATH (`arbor-graph-cli` >= 3.0)
+- Ranked pack: changed, callee, caller, test, config
+- Expand cites a set member, user seed, or graph neighbor; over-budget fails closed
+- Diff fallback stays labeled `engine: diff`
 
 ## v2 — same binary, more doors
 

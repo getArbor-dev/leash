@@ -1,0 +1,8 @@
+{
+  "changed_files": ["src/auth.rs"],
+  "changed_symbols": 1,
+  "impact": {
+    "direct_callers": 1,
+    "indirect_callers": 0
+  }
+}

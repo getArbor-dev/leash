@@ -26,14 +26,17 @@ Each included path has a `reason`. No reason, no include.
 
 ## Token accounting
 
-Count packed file bodies with the same tokenizer the host agent
-uses if we can detect it; otherwise a documented approximation
-(e.g. cl100k) named in the working-set header. Lying about tokens
-is a bug.
+Count packed file bodies with `approx-chars-div-4`, named in the
+working-set `tokenizer` field. A later host-matched tokenizer is
+allowed; lying about tokens is a bug.
 
 ## Expansion
 
-`leash expand <path-or-symbol> --because <reason>`
+`leash expand --path PATH --reason TEXT`
+
+`leash expand --symbol SYM --because TEXT`
+
+`--reason` and `--because` are the same flag.
 
 - Must cite a path or symbol already in the set, or the user
 - Appends an audit line

@@ -6,7 +6,7 @@ pub enum Cmd {
     SessionFromHook,
     Hook,
     Status,
-    Expand { path: String, reason: String },
+    Expand { path: Option<String>, symbol: Option<String>, reason: String },
     Install,
     Help,
 }
@@ -53,27 +53,39 @@ pub fn parse(args: &[String]) -> Result<Cmd, String> {
         }
         "expand" => {
             let rest: Vec<String> = it.cloned().collect();
-            let mut path = String::new();
+            let mut path = None;
+            let mut symbol = None;
             let mut reason = String::new();
             let mut i = 0;
             while i < rest.len() {
                 match rest[i].as_str() {
                     "--path" => {
                         i += 1;
-                        path = rest.get(i).cloned().ok_or("--path needs a value")?;
+                        path = Some(rest.get(i).cloned().ok_or("--path needs a value")?);
                     }
-                    "--reason" => {
+                    "--symbol" => {
                         i += 1;
-                        reason = rest.get(i).cloned().ok_or("--reason needs a value")?;
+                        symbol = Some(rest.get(i).cloned().ok_or("--symbol needs a value")?);
+                    }
+                    "--reason" | "--because" => {
+                        i += 1;
+                        reason = rest.get(i).cloned().ok_or("expand needs a reason")?;
                     }
                     other => return Err(format!("unknown expand flag {other}")),
                 }
                 i += 1;
             }
-            if path.is_empty() || reason.is_empty() {
-                return Err("expand requires --path and --reason".into());
+            if path.is_none() && symbol.is_none() {
+                return Err("expand requires --path or --symbol".into());
             }
-            Ok(Cmd::Expand { path, reason })
+            if reason.is_empty() {
+                return Err("expand requires --reason or --because".into());
+            }
+            Ok(Cmd::Expand {
+                path,
+                symbol,
+                reason,
+            })
         }
         other => Err(format!("unknown command {other}")),
     }
@@ -84,6 +96,7 @@ pub fn help_text() -> &'static str {
      leash hook\n\
      leash status\n\
      leash expand --path PATH --reason TEXT\n\
+     leash expand --symbol SYM --because TEXT\n\\
      leash install\n"
 }
 
@@ -115,5 +128,25 @@ mod tests {
     #[test]
     fn expand_requires_both() {
         assert!(parse(&s(&["expand", "--path", "a.rs"])).is_err());
+    }
+
+    #[test]
+    fn expand_accepts_because_and_symbol() {
+        let c = parse(&s(&[
+            "expand",
+            "--symbol",
+            "login",
+            "--because",
+            "trace callers",
+        ]))
+        .unwrap();
+        assert_eq!(
+            c,
+            Cmd::Expand {
+                path: None,
+                symbol: Some("login".into()),
+                reason: "trace callers".into(),
+            }
+        );
     }
 }

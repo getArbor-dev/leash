@@ -37,13 +37,12 @@ Leash refuses the patch. That is the gap.
 
 ## Status
 
-**v0 runtime is in this repository.** The skill plus `leash hook` is
-the product. There is still no daemon.
+**v1 runtime is in this repository.** The skill plus `leash hook` is
+the product. Arbor is optional. There is still no daemon.
 
 | Phase | Ships | Not yet |
 | --- | --- | --- |
-| Now | Skill, PreToolUse deny hook, fixture tests | Hosted anything |
-| v1 | Arbor graph as the radius engine | “We stop CVEs” marketing |
+| Now | Skill, deny hook, Arbor radius when `arbor` is on PATH | Hosted anything |
 | v2 | GitHub Action using the same binary | A new coding agent |
 | v3 | Optional fleet mode (worktrees + per-worker leash) | OpenClaw clone |
 
