@@ -2,9 +2,11 @@
 //!
 //! Markdown does not enforce. This crate does.
 
+pub mod config;
 pub mod decision;
 pub mod diff;
 pub mod hook;
 pub mod paths;
 pub mod rules;
 pub mod session;
+pub mod store;
