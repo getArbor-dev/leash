@@ -16,3 +16,7 @@ Releases will follow [SemVer](https://semver.org/) once v0 exists.
   LEASH-SEC-001..005, PreToolUse deny JSON, `leash install` for
   Claude Code.
 - Fixture pack: radius, secrets, symlink, manifest.
+- v1 graph radius: Arbor subprocess (`arbor diff` / callers /
+  callees), ranked token pack, citation-gated expand, `leash.yml`
+  include/exclude globs. `engine: arbor` only after a successful
+  run ([ADR 0007](docs/adr/0007-arbor-subprocess.md)).

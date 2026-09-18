@@ -25,8 +25,7 @@ the patch. Everything else is someone else’s job.
 ## Session
 
 1. Skill loads. Agent is told the hard rules.
-2. Engine builds the working set, writes it to `.leash/session.json`
-   (path is spec; runtime later).
+2. Engine builds the working set, writes it to `.leash/session.json`.
 3. Hook on every Edit/Write/mutating Bash: canonicalize path, check
    set, optionally scan hunk, return allow or deny with rule id.
 4. Expand is an explicit call with a reason. Silent growth is a bug.

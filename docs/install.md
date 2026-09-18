@@ -50,7 +50,12 @@ Optional `leash.yml` at repo root (schema in
 - budget 8,000 tokens of packed file bodies
 - deny out-of-set writes
 - default ruleset on
-- expand allowed with a reason
+- expand allowed with a cited reason
+- optional `include` / `exclude` posix globs
+
+Arbor is optional. `cargo install arbor-graph-cli` puts `arbor` on
+`PATH`. Without it, `leash session` still runs and labels
+`engine: diff`.
 
 ## Uninstall
 

@@ -5,8 +5,12 @@ No. Arbor maps. Leash budgets and denies. v1 calls Arbor when
 present.
 
 **Can I use it without Arbor?**
-v0 is specified that way: git-diff working set, labeled as
-diff-only.
+Yes. Git-diff working set, labeled `engine: diff`. Callers and
+callees are omitted until Arbor runs.
+
+**Does `arbor map` become the working set?**
+No. Map is a repo skeleton. Leash uses `arbor diff` and one-hop
+callers/callees. See [ADR 0007](adr/0007-arbor-subprocess.md).
 
 **Does this replace CodeQL?**
 No.
