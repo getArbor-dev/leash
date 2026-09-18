@@ -1,0 +1,43 @@
+name: Bug
+description: Something in the spec, skill contract, or (later) runtime is wrong.
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If this is a deny bypass or secret leak, stop and use the Security tab.
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options:
+        - README / install UX
+        - Skill contract (SKILL.md)
+        - Hook contract
+        - Context budget
+        - Vuln gate / ruleset
+        - Threat model
+        - Other docs
+        - Runtime (when it exists)
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Repro or citation
+      description: File path and section, or steps.
+    validations:
+      required: true

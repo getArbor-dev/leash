@@ -1,0 +1,18 @@
+name: Docs
+description: Typo, broken link, unclear contract language.
+title: "docs: "
+labels: ["documentation"]
+body:
+  - type: input
+    id: path
+    attributes:
+      label: Path
+      placeholder: docs/threat-model.md
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What is wrong or missing
+    validations:
+      required: true

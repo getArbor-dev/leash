@@ -1,0 +1,41 @@
+name: Change to the contract
+description: Propose a spec change. Not a kitchen-sink feature request.
+title: "spec: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Leash is one mechanism. If your idea is a new product line, it will be closed.
+        Read `docs/non-goals.md` first.
+  - type: dropdown
+    id: fits
+    attributes:
+      label: Which consequence does this serve?
+      options:
+        - Budgeted working set
+        - Deny out-of-radius writes
+        - Deny agent-failure hunks
+        - Lower token use as a result of the budget
+        - None of these (likely a close)
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Include whether an ADR is required.
+    validations:
+      required: true
+  - type: textarea
+    id: non-goals
+    attributes:
+      label: What this must not become
+    validations:
+      required: true
