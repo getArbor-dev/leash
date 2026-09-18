@@ -30,8 +30,21 @@ binary the harness already knows how to spawn.
 
 ## v1
 
-Replace diff-only ranking with Arbor radius. Same session file
-schema. Same hook. Engine is the only swap.
+Same session file. Same hook. The engine is the swap.
+
+```text
+[leash session]
+   │  git diff --name-only HEAD          (required)
+   │  arbor diff . --json                (when arbor is on PATH)
+   │  arbor callees / callers --json     (one hop)
+   ▼
+.leash/session.json
+   engine: arbor | diff
+```
+
+`arbor map` is not the working set. See [ADR 0007](adr/0007-arbor-subprocess.md).
+Missing Arbor, timeout, or junk JSON fall back to git diff and an
+audit line. The PreToolUse hook does not spawn Arbor.
 
 ## v2
 
