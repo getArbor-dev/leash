@@ -7,6 +7,8 @@ Thumbs.db
 !.env.example
 node_modules/
 target/
+*.pdb
+*.rs.bk
 dist/
 build/
 coverage/

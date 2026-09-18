@@ -1,0 +1,12 @@
+[package]
+name = "leash"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Budgeted context for coding agents. Out-of-radius patches don't land."
+repository = "https://github.com/getArbor-dev/leash"
+publish = false
+
+[lib]
+name = "leash"
+path = "src/lib.rs"
