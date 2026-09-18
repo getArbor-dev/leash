@@ -12,7 +12,7 @@ doc is wrong or the skill is wrong; fix in one PR.
 | `name` | `leash` |
 | `description` | Must mention working set, deny, and token budget. Must not say CVE or sandbox. |
 | `compatibility` | Harnesses we actually hook. No fiction. |
-| `metadata.status` | `v0` with a semver; was `contract` before the binary |
+| `metadata.status` | `v1` with a semver when the graph engine is real |
 
 ## Body obligations
 
