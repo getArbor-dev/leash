@@ -3,11 +3,47 @@
 use crate::decision::{Decision, RuleClass};
 
 pub fn scan_added(path: &str, added: &str) -> Option<Decision> {
-    sec_001(path, added)
+    if let Some(d) = sec_001(path, added) {
+        return Some(d);
+    }
+    sec_002(path, added)
 }
 
 fn added_lines(added: &str) -> impl Iterator<Item = (usize, &str)> {
     added.lines().enumerate().map(|(i, l)| (i + 1, l))
+}
+
+fn sec_002(path: &str, added: &str) -> Option<Decision> {
+    for (line_no, line) in added_lines(added) {
+        if dynamic_eval(line) {
+            return Some(Decision::deny(
+                RuleClass::Rule,
+                Some("LEASH-SEC-002"),
+                Some(path),
+                &format!("eval/exec on non-literal input in added lines (line {line_no})"),
+            ));
+        }
+    }
+    None
+}
+
+fn dynamic_eval(line: &str) -> bool {
+    let t = line.trim();
+    // Literal-only calls are not the agent footgun this rule is for.
+    let calls = ["eval(", "exec(", "Function("];
+    for c in calls {
+        if let Some(idx) = t.find(c) {
+            let rest = t[idx + c.len()..].trim_start();
+            if rest.starts_with('"') || rest.starts_with('\'') || rest.starts_with('`') {
+                continue;
+            }
+            if rest.starts_with(')') {
+                continue;
+            }
+            return true;
+        }
+    }
+    false
 }
 
 fn sec_001(path: &str, added: &str) -> Option<Decision> {
@@ -96,7 +132,13 @@ mod tests {
     }
 
     #[test]
-    fn ordinary_code_is_clean() {
-        assert!(scan_added("src/lib.rs", "let name = \"leash\";\n").is_none());
+    fn eval_on_variable_denies() {
+        let d = scan_added("app.js", "eval(userInput);\n").unwrap();
+        assert_eq!(d.rule_id.as_deref(), Some("LEASH-SEC-002"));
+    }
+
+    #[test]
+    fn eval_on_literal_is_clean() {
+        assert!(scan_added("app.js", "eval(\"2+2\");\n").is_none());
     }
 }
