@@ -283,4 +283,22 @@ mod tests {
         assert_eq!(set.paths[0].path, "keep.txt");
         assert!(set.audit.iter().any(|a| a.contains("arbor_missing") || a == "engine=diff"));
     }
+
+    #[test]
+    fn exclude_glob_drops_ranked_paths() {
+        let tmp = repo_files(&[("src/a.rs", "a"), ("vendor/x.rs", "x")]);
+        let mut cfg = Config::default();
+        cfg.exclude.push("vendor/**".into());
+        let set = assemble(
+            tmp.path(),
+            "t",
+            &[],
+            &cfg,
+            vec!["src/a.rs".into(), "vendor/x.rs".into()],
+            None,
+            vec!["engine=diff".into()],
+        );
+        assert!(set.contains_posix("src/a.rs", cfg!(windows)));
+        assert!(!set.contains_posix("vendor/x.rs", cfg!(windows)));
+    }
 }
