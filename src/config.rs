@@ -7,12 +7,16 @@ use crate::session::DEFAULT_BUDGET_TOKENS;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Config {
     pub budget_tokens: u32,
+    pub include: Vec<String>,
+    pub exclude: Vec<String>,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
             budget_tokens: DEFAULT_BUDGET_TOKENS,
+            include: Vec::new(),
+            exclude: Vec::new(),
         }
     }
 }

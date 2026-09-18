@@ -5,9 +5,10 @@ use std::path::{Path, PathBuf};
 
 use serde_json::{json, Value};
 
+use crate::arbor::Probe;
 use crate::cli::{help_text, Cmd};
 use crate::config;
-use crate::diff::build_from_diff;
+use crate::engine;
 use crate::hook::{decide, to_claude_json, HookInput};
 use crate::paths::canonicalize_in_repo;
 use crate::repo::find_repo;
@@ -56,7 +57,7 @@ fn cmd_session(
             return 2;
         }
     };
-    match start_session(&repo, task, paths) {
+    match start_session(&repo, task, paths, &Probe::from_env()) {
         Ok(set) => {
             let _ = writeln!(stdout, "{}", format_enforcing(&set));
             0
@@ -68,9 +69,9 @@ fn cmd_session(
     }
 }
 
-fn start_session(repo: &Path, task: &str, extra: &[String]) -> Result<WorkingSet, String> {
+fn start_session(repo: &Path, task: &str, extra: &[String], probe: &Probe) -> Result<WorkingSet, String> {
     let cfg = config::load(repo);
-    let set = build_from_diff(repo, task, cfg.budget_tokens, extra).map_err(|e| e.to_string())?;
+    let set = engine::build(repo, task, extra, &cfg, probe).map_err(|e| e.to_string())?;
     store::save(repo, &set).map_err(|e| e.to_string())?;
     Ok(set)
 }
@@ -97,7 +98,7 @@ fn cmd_session_from_hook(stdin: &mut dyn Read, stdout: &mut dyn Write, stderr: &
         );
         return 0;
     };
-    match start_session(&repo, "session", &[]) {
+    match start_session(&repo, "session", &[], &Probe::from_env()) {
         Ok(set) => {
             let ctx = format_enforcing(&set);
             let _ = writeln!(
@@ -305,7 +306,7 @@ mod tests {
     fn start_session_writes_json() {
         let tmp = git_repo();
         fs::write(tmp.path().join("keep.txt"), "changed").unwrap();
-        let set = start_session(tmp.path(), "edit", &[]).unwrap();
+        let set = start_session(tmp.path(), "edit", &[], &Probe::Off).unwrap();
         assert_eq!(set.engine, "diff");
         assert!(store::load(tmp.path()).is_some());
         assert_eq!(set.paths[0].path, "keep.txt");
