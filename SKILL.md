@@ -12,8 +12,8 @@ compatibility: >
   PreToolUse hook that can deny Edit, Write, and mutating Bash.
 metadata:
   author: getArbor-dev
-  version: 0.1.0
-  status: v0
+  version: 0.2.0
+  status: v1
 ---
 
 # Leash
@@ -54,10 +54,11 @@ leash.working_set:
   denials: []
 ```
 
-Until a graph engine is wired, `leash session` builds the working
-set from `git diff --name-only HEAD` plus `--path` seeds. The
-session file records `engine: diff`. Do not pretend you walked a
-graph.
+`leash session` always reads `git diff --name-only HEAD`. If `arbor`
+is on `PATH`, it also runs `arbor diff --json` plus one-hop
+callers/callees and records `engine: arbor`. If Arbor is missing or
+fails, it records `engine: diff` and an audit tag. Do not pretend
+you walked a graph.
 
 ```bash
 leash session --task "<one sentence>"
@@ -76,6 +77,7 @@ leash status
 - `leash session --task TEXT [--path PATH]...`
 - `leash hook` — PreToolUse stdin JSON, stdout Claude Code JSON
 - `leash expand --path PATH --reason TEXT`
+- `leash expand --symbol SYM --because TEXT`
 - `leash status` — `enforcing` or `NOT ENFORCING`
 - `leash install` — write `.claude/settings.json` if missing
 
