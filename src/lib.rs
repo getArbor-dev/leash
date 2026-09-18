@@ -4,3 +4,4 @@
 
 pub mod decision;
 pub mod paths;
+pub mod session;
