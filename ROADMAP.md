@@ -2,18 +2,13 @@
 
 Dates are not promises. Order is.
 
-## Now — contract
+## Now — v0 enforce
 
-- This repository: skill contract, hook contract, threat model, ADRs
-- README one-liner and 30-second install UX frozen unless an ADR says
-  otherwise
-
-## v0 — enforce
-
-- `leash.yml` schema
+- Rust `leash` binary: session, hook, status, expand, install
 - PreToolUse hook that can deny Edit / Write / mutating Bash
-- Diff-only working set fallback when Arbor is missing
-- Fixture pack: out-of-radius write, secret in hunk, symlink path
+- Diff-only working set labeled `engine: diff`
+- Fixture pack: out-of-radius write, secret in hunk, symlink path,
+  manifest without lockfile
 - Fail-visible when the hook is not installed
 
 ## v1 — graph radius
