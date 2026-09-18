@@ -2,4 +2,5 @@
 //!
 //! Markdown does not enforce. This crate does.
 
+pub mod decision;
 pub mod paths;
