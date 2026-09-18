@@ -1,10 +1,10 @@
-//! Diff-only working set. v0. Arbor is a later engine swap.
+//! Diff-only working set. Ranked packing lives in `pack`.
 
 use std::path::Path;
 use std::process::Command;
 
-use crate::paths::{canonicalize_in_repo, volume_is_case_insensitive};
-use crate::session::{Omitted, SetPath, WorkingSet, DEFAULT_BUDGET_TOKENS};
+use crate::pack::{pack, Candidate};
+use crate::session::WorkingSet;
 
 #[derive(Debug)]
 pub enum DiffError {
@@ -27,7 +27,14 @@ impl std::error::Error for DiffError {}
 
 pub fn changed_paths(repo: &Path) -> Result<Vec<String>, DiffError> {
     let output = Command::new("git")
-        .args(["-C", repo.to_str().ok_or(DiffError::NotARepo)?, "diff", "--name-only", "-z", "HEAD"])
+        .args([
+            "-C",
+            repo.to_str().ok_or(DiffError::NotARepo)?,
+            "diff",
+            "--name-only",
+            "-z",
+            "HEAD",
+        ])
         .output()
         .map_err(|_| DiffError::GitNotFound)?;
     if !output.status.success() {
@@ -51,58 +58,21 @@ pub fn build_from_diff(
     budget_tokens: u32,
     extra_paths: &[String],
 ) -> Result<WorkingSet, DiffError> {
-    let mut set = WorkingSet::empty(task, budget_tokens);
-    set.engine = "diff".to_string();
-    set.audit.push("engine=diff".to_string());
-
-    let mut ranked: Vec<(String, &'static str)> = Vec::new();
-    for p in changed_paths(repo)? {
-        ranked.push((p, "changed"));
-    }
+    let mut candidates: Vec<Candidate> = changed_paths(repo)?
+        .into_iter()
+        .map(|p| Candidate::new(p, "changed"))
+        .collect();
     for p in extra_paths {
-        ranked.push((p.clone(), "expanded"));
+        candidates.push(Candidate::new(p.clone(), "expanded"));
     }
-
-    let casefold = volume_is_case_insensitive();
-    let mut omitted_budget = 0u32;
-
-    for (raw, reason) in ranked {
-        let posix = match canonicalize_in_repo(repo, &raw) {
-            Ok(p) => p.as_posix().to_string(),
-            Err(_) => {
-                omitted_budget += 1;
-                continue;
-            }
-        };
-        if set.contains_posix(&posix, casefold) {
-            continue;
-        }
-        let abs = repo.join(posix.replace('/', std::path::MAIN_SEPARATOR_STR));
-        let bytes = std::fs::read(&abs).ok().map(|b| b.len()).unwrap_or(0);
-        let add = WorkingSet::approx_tokens(bytes);
-        if set.used_tokens.saturating_add(add) > set.budget_tokens && !set.paths.is_empty() {
-            omitted_budget += 1;
-            continue;
-        }
-        set.used_tokens = set.used_tokens.saturating_add(add);
-        set.paths.push(SetPath {
-            path: posix,
-            reason: reason.to_string(),
-            symbols: vec![],
-        });
-    }
-
-    if omitted_budget > 0 {
-        set.omitted.push(Omitted {
-            reason: "budget".into(),
-            count: omitted_budget,
-        });
-    }
-    Ok(set)
-}
-
-pub fn default_budget() -> u32 {
-    DEFAULT_BUDGET_TOKENS
+    Ok(pack(
+        repo,
+        task,
+        budget_tokens,
+        "diff",
+        vec!["engine=diff".into()],
+        candidates,
+    ))
 }
 
 #[cfg(test)]
@@ -158,13 +128,7 @@ mod tests {
     fn extra_path_is_expanded() {
         let tmp = git_repo();
         fs::write(tmp.path().join("other.txt"), "x").unwrap();
-        let set = build_from_diff(
-            tmp.path(),
-            "seed",
-            8000,
-            &["other.txt".to_string()],
-        )
-        .unwrap();
+        let set = build_from_diff(tmp.path(), "seed", 8000, &["other.txt".to_string()]).unwrap();
         assert!(set.contains_posix("other.txt", cfg!(windows)));
         assert_eq!(
             set.paths.iter().find(|p| p.path == "other.txt").unwrap().reason,

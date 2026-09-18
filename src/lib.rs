@@ -8,6 +8,7 @@ pub mod config;
 pub mod decision;
 pub mod diff;
 pub mod hook;
+pub mod pack;
 pub mod paths;
 pub mod repo;
 pub mod rules;
