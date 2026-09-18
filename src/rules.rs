@@ -11,6 +11,7 @@ pub fn scan_hunk(path: &str, added: &str, apply_paths: &[&str]) -> Option<Decisi
     sec_001(path, added)
         .or_else(|| sec_002(path, added))
         .or_else(|| sec_003(path, added))
+        .or_else(|| sec_004(path, added))
 }
 
 fn added_lines(added: &str) -> impl Iterator<Item = (usize, &str)> {
@@ -79,6 +80,34 @@ fn sql_concat(line: &str) -> bool {
         || line.contains(".format(")
         || (line.contains("f\"") && line.contains('{'))
         || (line.contains("f'") && line.contains('{'))
+}
+
+fn sec_004(path: &str, added: &str) -> Option<Decision> {
+    for (line_no, line) in added_lines(added) {
+        if xss_sink(line) {
+            return Some(Decision::deny(
+                RuleClass::Rule,
+                Some("LEASH-SEC-004"),
+                Some(path),
+                &format!("HTML interpolated into a DOM sink in added lines (line {line_no})"),
+            ));
+        }
+    }
+    None
+}
+
+fn xss_sink(line: &str) -> bool {
+    let sink = line.contains("innerHTML")
+        || line.contains("outerHTML")
+        || line.contains("document.write")
+        || line.contains("dangerouslySetInnerHTML")
+        || line.contains("insertAdjacentHTML");
+    if !sink {
+        return false;
+    }
+    line.contains("${")
+        || line.contains(" + ")
+        || line.contains("{") && line.contains("}")
 }
 
 fn sec_001(path: &str, added: &str) -> Option<Decision> {
@@ -186,5 +215,16 @@ mod tests {
     #[test]
     fn parameterized_sql_is_clean() {
         assert!(scan_added("db.py", "q = \"SELECT * FROM users WHERE id = ?\"\n").is_none());
+    }
+
+    #[test]
+    fn innerhtml_interpolation_denies() {
+        let d = scan_added("ui.js", "el.innerHTML = `<div>${user}</div>`;\n").unwrap();
+        assert_eq!(d.rule_id.as_deref(), Some("LEASH-SEC-004"));
+    }
+
+    #[test]
+    fn innerhtml_literal_is_clean() {
+        assert!(scan_added("ui.js", "el.innerHTML = \"<div class='ok'></div>\";\n").is_none());
     }
 }
