@@ -8,6 +8,7 @@ pub enum Cmd {
     Status,
     Expand { path: Option<String>, symbol: Option<String>, reason: String },
     Install,
+    Ci { base: String, task: String },
     Help,
 }
 
@@ -21,6 +22,43 @@ pub fn parse(args: &[String]) -> Result<Cmd, String> {
         "hook" => Ok(Cmd::Hook),
         "status" => Ok(Cmd::Status),
         "install" => Ok(Cmd::Install),
+        "ci" => {
+            let rest: Vec<String> = it.cloned().collect();
+            let mut base = String::new();
+            let mut task = String::from("pull request");
+            let mut i = 0;
+            while i < rest.len() {
+                match rest[i].as_str() {
+                    "--base" => {
+                        i += 1;
+                        base = rest.get(i).cloned().ok_or("--base needs a value")?;
+                    }
+                    "--task" => {
+                        i += 1;
+                        task = rest.get(i).cloned().ok_or("--task needs a value")?;
+                    }
+                    other if other.starts_with("--base=") => {
+                        base = other[7..].to_string();
+                    }
+                    other if other.starts_with("--task=") => {
+                        task = other[7..].to_string();
+                    }
+                    other => return Err(format!("unknown ci flag {other}")),
+                }
+                i += 1;
+            }
+            if base.is_empty() {
+                if let Ok(env_base) = std::env::var("LEASH_BASE") {
+                    if !env_base.is_empty() {
+                        base = env_base;
+                    }
+                }
+            }
+            if base.is_empty() {
+                return Err("ci requires --base".into());
+            }
+            Ok(Cmd::Ci { base, task })
+        }
         "session" => {
             let rest: Vec<String> = it.cloned().collect();
             if rest.iter().any(|a| a == "--from-hook") {
@@ -96,8 +134,9 @@ pub fn help_text() -> &'static str {
      leash hook\n\
      leash status\n\
      leash expand --path PATH --reason TEXT\n\
-     leash expand --symbol SYM --because TEXT\n\\
-     leash install\n"
+     leash expand --symbol SYM --because TEXT\n\
+     leash install\n\
+     leash ci --base REF [--task TEXT]\n"
 }
 
 #[cfg(test)]
@@ -128,6 +167,23 @@ mod tests {
     #[test]
     fn expand_requires_both() {
         assert!(parse(&s(&["expand", "--path", "a.rs"])).is_err());
+    }
+
+    #[test]
+    fn ci_requires_base() {
+        assert!(parse(&s(&["ci"])).is_err());
+    }
+
+    #[test]
+    fn ci_parses_base_and_task() {
+        let c = parse(&s(&["ci", "--base", "origin/main", "--task", "pr"])).unwrap();
+        assert_eq!(
+            c,
+            Cmd::Ci {
+                base: "origin/main".into(),
+                task: "pr".into(),
+            }
+        );
     }
 
     #[test]

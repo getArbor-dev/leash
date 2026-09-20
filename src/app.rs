@@ -34,6 +34,7 @@ pub fn run(args: &[String], stdin: &mut dyn Read, stdout: &mut dyn Write, stderr
         Cmd::Status => cmd_status(stdout, stderr),
         Cmd::Expand { path, symbol, reason } => cmd_expand(path, symbol, &reason, stdout, stderr),
         Cmd::Install => cmd_install(stdout, stderr),
+        Cmd::Ci { base, task } => cmd_ci(&base, &task, stdout, stderr),
     }
 }
 
@@ -235,6 +236,26 @@ fn cmd_expand(
                 }
             }
             0
+        }
+        Err(e) => {
+            let _ = writeln!(stderr, "leash: {e}");
+            2
+        }
+    }
+}
+
+fn cmd_ci(base: &str, task: &str, stdout: &mut dyn Write, stderr: &mut dyn Write) -> i32 {
+    let repo = match cwd_repo() {
+        Ok(r) => r,
+        Err(e) => {
+            let _ = writeln!(stderr, "leash: {e}");
+            return 2;
+        }
+    };
+    match crate::ci::run(&repo, base, task) {
+        Ok(report) => {
+            let _ = write!(stdout, "{}", crate::ci::markdown(&report));
+            crate::ci::exit_code(&report)
         }
         Err(e) => {
             let _ = writeln!(stderr, "leash: {e}");
