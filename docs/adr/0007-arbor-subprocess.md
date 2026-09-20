@@ -40,4 +40,5 @@ the change.
   remains a complete v0 deny.
 - Arbor graph correctness stays Arbor’s bug tracker. Leash’s job is
   the label.
-- A later GitHub Action (v2) reuses this engine, not a new map.
+- The GitHub Action door reuses this engine, not a new map
+  ([ADR 0009](0009-action-door.md)).
