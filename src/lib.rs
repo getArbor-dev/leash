@@ -4,6 +4,7 @@
 
 pub mod app;
 pub mod arbor;
+pub mod ci;
 pub mod cli;
 pub mod config;
 pub mod decision;

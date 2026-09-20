@@ -18,6 +18,16 @@ working set           paths + reasons + token budget
             └─ else                 → allow
 ```
 
+```text
+[GitHub Action / leash ci]
+    │  git diff BASE...HEAD
+    ▼
+working set + ruleset on added lines
+    │
+    ├─ RULE match  → comment + fail the job
+    └─ else        → comment + pass
+```
+
 Tokens fall because packing is small. Vulns in the “agent just
 wrote a footgun in the hunk” class are denied because the hook sees
 the patch. Everything else is someone else’s job.
@@ -29,6 +39,9 @@ the patch. Everything else is someone else’s job.
 3. Hook on every Edit/Write/mutating Bash: canonicalize path, check
    set, optionally scan hunk, return allow or deny with rule id.
 4. Expand is an explicit call with a reason. Silent growth is a bug.
+5. On a pull request, `leash ci --base REF` packs the same set from
+   `REF...HEAD` and runs the same ruleset. The comment is the set
+   plus denials. RADIUS is not a CI failure.
 
 ## Failure modes we accept
 

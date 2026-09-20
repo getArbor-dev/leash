@@ -1,0 +1,43 @@
+name: leash
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  leash:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Working set and ruleset
+        id: gate
+        run: |
+          set +e
+          cargo run --locked --quiet -- ci --base "origin/${{ github.base_ref }}" | tee leash-comment.md
+          echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+      - name: Comment
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test -f leash-comment.md || exit 0
+          NUMBER="${{ github.event.pull_request.number }}"
+          MARKER='<!-- leash -->'
+          BODY_JSON=$(jq -n --rawfile body leash-comment.md '{body: $body}')
+          ID=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${NUMBER}/comments" --paginate \
+            --jq ".[] | select(.body | contains(\"$MARKER\")) | .id" | head -n 1)
+          if [ -n "$ID" ]; then
+            printf '%s' "$BODY_JSON" | gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${ID}" --input -
+          else
+            printf '%s' "$BODY_JSON" | gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${NUMBER}/comments" --input -
+          fi
+      - name: Fail on ruleset deny
+        if: steps.gate.outputs.code == '1' || steps.gate.outputs.code == '2'
+        run: exit "${{ steps.gate.outputs.code }}"

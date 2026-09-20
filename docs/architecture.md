@@ -49,7 +49,20 @@ audit line. The PreToolUse hook does not spawn Arbor.
 ## v2
 
 The engine’s deny/pack library is called from a GitHub Action.
-Same rule ids. Different door.
+Same rule ids. Different door. See [ADR 0009](adr/0009-action-door.md).
+
+```text
+[GitHub Action]
+   │  git diff BASE...HEAD
+   │  assemble (engine: diff, door=ci)
+   │  scan_hunk on added lines
+   ▼
+PR comment: working set + denials
+job fails on RULE
+```
+
+`leash ci` does not write `.leash/session.json` and does not
+spawn Arbor or call GitHub.
 
 ## Language
 

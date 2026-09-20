@@ -9,6 +9,7 @@ fn help_exits_zero() {
     assert!(out.status.success());
     let stdout = String::from_utf8_lossy(&out.stdout);
     assert!(stdout.contains("leash session"));
+    assert!(stdout.contains("leash ci"));
 }
 
 #[test]

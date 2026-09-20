@@ -2,18 +2,19 @@
 
 Dates are not promises. Order is.
 
-## Now — v1 graph radius
+## Done — v1 graph radius
 
 - Arbor subprocess when `arbor` is on PATH (`arbor-graph-cli` >= 3.0)
 - Ranked pack: changed, callee, caller, test, config
 - Expand cites a set member, user seed, or graph neighbor; over-budget fails closed
 - Diff fallback stays labeled `engine: diff`
 
-## v2 — same binary, more doors
+## Now — v2 Action door
 
-- GitHub Action: PR comment is the working set + denials, not a
-  novel
-- CI gate on the same ruleset as the hook
+- `leash ci --base REF` packs `REF...HEAD` with the same library
+- PR comment is the working set + denials, not a novel
+- CI gate on the same ruleset as the hook (not RADIUS)
+- Label stays `engine: diff`. The Action does not spawn Arbor
 
 ## v3 — fleet (optional)
 
