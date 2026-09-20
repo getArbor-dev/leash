@@ -8,6 +8,9 @@ Releases will follow [SemVer](https://semver.org/) once v0 exists.
 
 ### Changed
 
+- `leash ci` comments the omitted paths, not only a count. The
+  Action comment is the working set; a bare `budget: 5` hid it.
+
 - Organization admins may squash-merge pull requests without
   reviews. Direct push to `main` stays denied. Maintain
   collaborators still need a review (ADR 0008).

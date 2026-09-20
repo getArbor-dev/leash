@@ -40,8 +40,8 @@ the patch. Everything else is someone else’s job.
    set, optionally scan hunk, return allow or deny with rule id.
 4. Expand is an explicit call with a reason. Silent growth is a bug.
 5. On a pull request, `leash ci --base REF` packs the same set from
-   `REF...HEAD` and runs the same ruleset. The comment is the set
-   plus denials. RADIUS is not a CI failure.
+   `REF...HEAD` and runs the same ruleset. The comment is the set,
+   omitted paths, and denials. RADIUS is not a CI failure.
 
 ## Failure modes we accept
 
