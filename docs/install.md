@@ -57,6 +57,10 @@ Arbor is optional. `cargo install arbor-graph-cli` puts `arbor` on
 `PATH`. Without it, `leash session` still runs and labels
 `engine: diff`.
 
+CI is the same binary: `leash ci --base origin/main`. This
+repository’s workflow is `.github/workflows/leash.yml`. Copy that
+file; do not expect a hosted service.
+
 ## Uninstall
 
 Remove the skill and the hook. Leave no daemon. v0 has no daemon.

@@ -37,13 +37,13 @@ Leash refuses the patch. That is the gap.
 
 ## Status
 
-**v1 runtime is in this repository.** The skill plus `leash hook` is
-the product. Arbor is optional. There is still no daemon.
+**v2 runtime is in this repository.** The skill plus `leash hook`
+is the product. The Action is the same binary on a PR. Arbor is
+optional. There is still no daemon.
 
 | Phase | Ships | Not yet |
 | --- | --- | --- |
-| Now | Skill, deny hook, Arbor radius when `arbor` is on PATH | Hosted anything |
-| v2 | GitHub Action using the same binary | A new coding agent |
+| Now | Skill, deny hook, Arbor radius, `leash ci` Action door | Hosted anything |
 | v3 | Optional fleet mode (worktrees + per-worker leash) | OpenClaw clone |
 
 ## Docs

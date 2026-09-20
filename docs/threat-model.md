@@ -38,6 +38,7 @@ payloads. Treat this repo as a supply-chain artifact.
 | Working set silently grows | Expand is explicit + audit line |
 | Maintainer force-push to neuter denies | Ruleset on `main`; org-admin bypass is PR-merge only, not force-push |
 | Org-admin merge without review | Accepted residual ([ADR 0008](adr/0008-org-admin-pr-bypass.md)): org admins can land a PR without Akshay; Maintain cannot |
+| PR lands a ruleset hunk | v2 Action runs `scan_hunk` on `BASE...HEAD` and fails the job |
 | Dependency confusion on install | Package name not claimed until v0; document |
 
 ## Out of scope

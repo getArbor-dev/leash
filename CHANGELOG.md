@@ -14,6 +14,10 @@ Releases will follow [SemVer](https://semver.org/) once v0 exists.
 
 ### Added
 
+- v2 Action door: `leash ci --base REF` packs `REF...HEAD`,
+  comments the working set and denials, fails CI on a RULE deny
+  ([ADR 0009](docs/adr/0009-action-door.md)).
+
 - Docs-first repository: product contract, skill spec, hook spec,
   threat model, ADRs, GitHub templates, and maintainer rules.
 - `SKILL.md` contract for a 30-second install path

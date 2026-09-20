@@ -15,6 +15,10 @@ callers/callees. See [ADR 0007](adr/0007-arbor-subprocess.md).
 **Does this replace CodeQL?**
 No.
 
+**Does CI replace the hook?**
+No. Same ruleset, different door. `leash ci` comments the working
+set and fails the job on a RULE deny. RADIUS stays pre-apply.
+
 **Does the skill block writes by itself?**
 No. The hook blocks writes. The skill briefs the model.
 

@@ -12,8 +12,8 @@ compatibility: >
   PreToolUse hook that can deny Edit, Write, and mutating Bash.
 metadata:
   author: getArbor-dev
-  version: 0.2.0
-  status: v1
+  version: 0.3.0
+  status: v2
 ---
 
 # Leash
@@ -80,6 +80,8 @@ leash status
 - `leash expand --symbol SYM --because TEXT`
 - `leash status` — `enforcing` or `NOT ENFORCING`
 - `leash install` — write `.claude/settings.json` if missing
+- `leash ci --base REF` — same pack and ruleset on a PR range;
+  CI door, not a session command
 
 ## Output
 
