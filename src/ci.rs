@@ -6,6 +6,7 @@ use crate::config;
 use crate::decision::Decision;
 use crate::diff::{self, DiffError};
 use crate::engine;
+use crate::paths::volume_is_case_insensitive;
 use crate::rules::scan_hunk;
 use crate::session::WorkingSet;
 
@@ -14,6 +15,7 @@ pub struct Report {
     pub set: WorkingSet,
     pub denials: Vec<Decision>,
     pub range: String,
+    pub omitted_paths: Vec<String>,
 }
 
 pub fn range_for_base(base: &str) -> Result<String, DiffError> {
@@ -46,11 +48,22 @@ pub fn run(repo: &Path, base: &str, task: &str) -> Result<Report, DiffError> {
             denials.push(d);
         }
     }
+    let omitted_paths = omitted_from_range(&set, &git_changed);
     Ok(Report {
         set,
         denials,
         range,
+        omitted_paths,
     })
+}
+
+fn omitted_from_range(set: &WorkingSet, git_changed: &[String]) -> Vec<String> {
+    let casefold = volume_is_case_insensitive();
+    git_changed
+        .iter()
+        .filter(|p| !set.contains_posix(&p.replace('\\', "/"), casefold))
+        .cloned()
+        .collect()
 }
 
 pub fn exit_code(report: &Report) -> i32 {
@@ -77,8 +90,11 @@ pub fn markdown(report: &Report) -> String {
         }
         out.push('\n');
     }
-    if !report.set.omitted.is_empty() {
+    if !report.omitted_paths.is_empty() || !report.set.omitted.is_empty() {
         out.push_str("### Omitted\n\n");
+        for p in &report.omitted_paths {
+            out.push_str(&format!("- `{p}`\n"));
+        }
         for o in &report.set.omitted {
             out.push_str(&format!("- {}: {}\n", o.reason, o.count));
         }
@@ -236,6 +252,25 @@ diff --git a/keep.txt b/keep.txt
             report.denials.is_empty(),
             "unexpected denials: {:?}",
             report.denials
+        );
+    }
+
+    #[test]
+    fn over_budget_comment_names_omitted_paths() {
+        let tmp = git_repo();
+        let p = tmp.path();
+        branch_off(p, "pr");
+        fs::write(p.join("leash.yml"), "budget_tokens: 4\n").unwrap();
+        fs::write(p.join("big-a.txt"), "a".repeat(80)).unwrap();
+        fs::write(p.join("big-b.txt"), "b".repeat(80)).unwrap();
+        commit_all(p, "two files");
+        let report = run(p, "HEAD~1", "pull request").unwrap();
+        assert_eq!(exit_code(&report), 0);
+        assert!(!report.omitted_paths.is_empty());
+        let md = markdown(&report);
+        assert!(
+            report.omitted_paths.iter().any(|p| md.contains(&format!("`{p}`"))),
+            "comment should name omitted paths: {md}"
         );
     }
 
